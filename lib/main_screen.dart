@@ -39,10 +39,44 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-    return SizedBox(
-      width: size.width,
-      height: size.height,
-      child: WebViewWidget(controller: controller),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('나만의 웹브라우저'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.add),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.more_vert),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              print(value);
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem<String>(
+                value: 'https://www.google.com',
+                child: Text('구글'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'https://www.naver.com',
+                child: Text('네이버'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'https://www.daum.net',
+                child: Text('카카오'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: SizedBox(
+        width: size.width,
+        height: size.height,
+        child: WebViewWidget(controller: controller),
+      ),
     );
   }
 }
