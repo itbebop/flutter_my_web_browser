@@ -9,12 +9,12 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late WebViewController controller;
+  late WebViewController _controller;
 
   @override
   void initState() {
     super.initState();
-    controller = WebViewController()
+    _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
@@ -39,6 +39,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+    bool pop = false;
     return Scaffold(
       appBar: AppBar(
         title: const Text('나만의 웹브라우저'),
@@ -49,7 +50,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
-              controller.loadRequest(Uri.parse(value));
+              _controller.loadRequest(Uri.parse(value));
             },
             itemBuilder: (context) => [
               const PopupMenuItem<String>(
@@ -61,18 +62,85 @@ class _MainScreenState extends State<MainScreen> {
                 child: Text('네이버'),
               ),
               const PopupMenuItem<String>(
-                value: 'https://www.daum.net',
+                value: 'https://www.kakao.com',
                 child: Text('카카오'),
               ),
             ],
           ),
         ],
       ),
-      body: SizedBox(
-        width: size.width,
-        height: size.height,
-        child: WebViewWidget(controller: controller),
+      body: PopScope(
+        canPop: pop,
+        onPopInvoked: ((didPop) async {
+          if (await _controller.canGoBack()) {
+            await _controller.goBack();
+            return;
+          }
+          setState(() {
+            pop = true;
+          });
+          await _controller.goBack();
+          //_showBackDialog(pop);
+        }),
+        child: SizedBox(
+          width: size.width,
+          height: size.height,
+          child: WebViewWidget(
+            controller: _controller,
+          ),
+        ),
       ),
+    );
+  }
+
+  void _showBackDialog(pop) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('페이지 이동'),
+          content: const Text(
+            '현재 페이지를 나가시겠습니까?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('네'),
+              onPressed: () async {
+                await _controller.goBack();
+                _controller.goBack();
+                Navigator.pop(context);
+                bool can = await _controller.canGoBack();
+                print(can);
+                if (!await _controller.canGoBack()) {
+                  setState(() {
+                    pop = true;
+                    print(pop);
+                    _controller.goBack();
+                  });
+                }
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('아니오'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("기타"),
+            )
+          ],
+        );
+      },
     );
   }
 }
