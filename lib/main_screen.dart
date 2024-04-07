@@ -47,10 +47,6 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () {},
             icon: const Icon(Icons.add),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert),
-          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               controller.loadRequest(Uri.parse(value));
